@@ -19,6 +19,12 @@ contract ERC721 {
         uint256 indexed tokenId
     );
 
+    event Approval(
+        address indexed owner,
+        address indexed approved,
+        uint256 indexed tokenId
+    );
+
     // mapping in solidity creates a hash table of key pair values
 
     // Mapping from token id to owner
@@ -95,6 +101,39 @@ contract ERC721 {
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenId) public {
+        approve(_to, _tokenId);
+        require(isApprovedOrOwner(msg.sender,_tokenId));
         _transferFrom(_from, _to, _tokenId);
+    }
+
+    // 1. require that the person approving is the owner
+    // 2. we are approving an address to a token (tokenId)
+    // 3. require that we cant approve sending tokens of the owner to the owner (current caller)
+    // 4. update the map of the approval addresses
+    function _approve(address _to, uint256 tokenId) internal {
+        address owner = ownerOf(tokenId);
+        require(_to != owner, 'Error: approval to current owner');
+        require(msg.sender == owner, 'Error: current caller is not the owner of the token');
+
+        _tokenApprovals[tokenId] = _to;
+
+        emit Approval(owner, _to, tokenId);
+    }
+
+    function approve(address _to, uint256 tokenId) public {
+        _approve(_to, tokenId);
+    }
+
+    function isApprovedOrOwner(address spender, uint256 tokenId) internal view returns(bool) {
+        require(_exists(tokenId),'Error: token does not exist');
+        address owner = ownerOf(tokenId);
+
+        return(spender == owner || getApproved(tokenId) == spender);
+    }
+
+    function getApproved(uint256 tokenId) public view returns(address) {
+        require(_exists(tokenId), 'Error: token does not exist');
+
+        return _tokenApprovals[tokenId];
     }
 }
