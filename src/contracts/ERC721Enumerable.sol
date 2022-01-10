@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import './ERC721.sol';
+import './interfaces/IERC721Enumerable.sol';
 
-contract ERC721Enumerable is ERC721 {
+contract ERC721Enumerable is ERC721, IERC721Enumerable {
 
     uint256[] private _allTokens;
 
@@ -15,6 +16,18 @@ contract ERC721Enumerable is ERC721 {
 
     // mapping from token ID to index of the owner tokens list
     mapping(uint256 => uint256) private _ownedTokensIndex;
+
+    constructor() {
+        _registerInterface(
+            bytes4(
+                keccak256('totalSupply(bytes4)')
+                ^
+                keccak256('tokenByIndex(bytes4)')
+                ^
+                keccak256('tokenOfOwnerByIndex(bytes4)')
+            )
+        );
+    }
 
     /// @notice Count NFTs tracked by this contract
     /// @return A count of valid NFTs tracked by this contract, where each one of
