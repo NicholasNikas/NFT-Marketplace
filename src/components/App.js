@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react'
 import Web3 from 'web3'
 import detectEthereumProvider from '@metamask/detect-provider'
 import KryptoBird from '../abis/KryptoBird.json'
+import {
+  MDBCard,
+  MDBCardBody,
+  MDBCardTitle,
+  MDBCardImage,
+  MDBCardText,
+  MDBBtn,
+} from 'mdb-react-ui-kit'
+import './App.css'
 
 const App = () => {
   const [account, setAccount] = useState([])
@@ -67,7 +76,7 @@ const App = () => {
   }, [])
 
   return (
-    <div>
+    <div className='container-filled'>
       {console.log('kryptoBirdz', kryptoBirdz)}
       <nav className='navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow'>
         <div
@@ -111,6 +120,35 @@ const App = () => {
               </form>
             </div>
           </main>
+        </div>
+        <hr></hr>
+        <div className='row textCenter'>
+          {kryptoBirdz.map((kryptoBird, key) => {
+            return (
+              <div>
+                <div>
+                  <MDBCard className='token img' style={{ maxWidth: '22rem' }}>
+                    <MDBCardImage
+                      src={kryptoBird}
+                      position='top'
+                      height='250rem'
+                      style={{ marginRight: '4px' }}
+                    />
+                    <MDBCardBody>
+                      <MDBCardTitle>KryptoBirdz</MDBCardTitle>
+                      <MDBCardText>
+                        The KryptoBirdz are 20 uniquely generated Kbirdz from
+                        the cyberpunk cloud gaalxy Mystopia! There is only one
+                        of each bird and each bird can be owned by a single
+                        person on the ethereum blockchain.
+                      </MDBCardText>
+                      <MDBBtn href={kryptoBird}>Download</MDBBtn>
+                    </MDBCardBody>
+                  </MDBCard>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
