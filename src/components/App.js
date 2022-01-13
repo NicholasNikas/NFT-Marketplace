@@ -5,6 +5,9 @@ import KryptoBird from '../abis/KryptoBird.json'
 
 const App = () => {
   const [account, setAccount] = useState([])
+  const [contract, setContract] = useState(null)
+  const [kryptoBirdz, setKryptoBirdz] = useState([])
+  const [kryptoBird, setKryptoBird] = useState(null)
 
   // first up is to check ethereum provider
   const loadWeb3 = async () => {
@@ -33,8 +36,29 @@ const App = () => {
       const abi = KryptoBird.abi
       const address = networkData.address
       const contract = await new web3.eth.Contract(abi, address)
-      console.log(contract)
+      setContract(contract)
+
+      // call the total supply of our KryptoBirdz
+      const totalSupply = await contract.methods.totalSupply().call()
+
+      // set up an array to keep track of tokens
+      // load KryptoBirdz
+      for (let i = 1; i <= totalSupply; i++) {
+        const KryptoBird = await contract.methods.kryptoBirdz(i - 1).call()
+        setKryptoBirdz((bird) => [...bird, KryptoBird])
+      }
+    } else {
+      window.alert('Smart contract not deployed')
     }
+  }
+
+  const mint = async (bird) => {
+    contract.methods
+      .mint(bird)
+      .send({ from: account[0] })
+      .once('receipt', (receipt) => {
+        setKryptoBirdz([...kryptoBirdz, bird])
+      })
   }
 
   useEffect(async () => {
@@ -44,6 +68,7 @@ const App = () => {
 
   return (
     <div>
+      {console.log('kryptoBirdz', kryptoBirdz)}
       <nav className='navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow'>
         <div
           className='navbar-brand col-sm-3 col-md-3 mr-0'
@@ -57,6 +82,37 @@ const App = () => {
           </li>
         </ul>
       </nav>
+
+      <div className='container-fluid mt-1'>
+        <div className='row'>
+          <main role='main' className='col-lg-12 d-flex text-center'>
+            <div className='content mr-auto ml-auto' style={{ opacity: 0.8 }}>
+              <h1 style={{ color: 'black' }}>KryptoBirdz - NFT Marketplace</h1>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  mint(kryptoBird.value)
+                }}
+              >
+                <input
+                  type='text'
+                  placeholder='Add a file location'
+                  className='form-control mb-1'
+                  ref={(input) => {
+                    setKryptoBird(input)
+                  }}
+                />
+                <input
+                  style={{ margin: '6px' }}
+                  type='submit'
+                  className='btn btn-primary btn-black'
+                  value='MINT'
+                />
+              </form>
+            </div>
+          </main>
+        </div>
+      </div>
     </div>
   )
 }
