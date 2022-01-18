@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import './ERC165.sol';
 import './interfaces/IERC721.sol';
+import './Libraries/Counters.sol';
 
     /*
     building out the minting function:
@@ -15,6 +16,8 @@ import './interfaces/IERC721.sol';
     */
 
 contract ERC721 is ERC165, IERC721 {
+    using SafeMath for uint256;
+    using Counters for Counters.Counter;
 
     // mapping in solidity creates a hash table of key pair values
 
@@ -22,7 +25,7 @@ contract ERC721 is ERC165, IERC721 {
     mapping(uint256 => address) private _tokenOwner;
 
     // Mapping from owner to number of owned tokens
-    mapping(address => uint256) private _ownedTokensCount;
+    mapping(address => Counters.Counter) private _ownedTokensCount;
 
     // Mapping from token id to approved addresses
     mapping(uint256 => address) private _tokenApprovals;
@@ -46,7 +49,7 @@ contract ERC721 is ERC165, IERC721 {
     /// @return The number of NFTs owned by `_owner`, possibly zero
     function balanceOf(address _owner) public view returns (uint256) {
         require(_owner != address(0), 'Error: owner query for non-existent token');
-        return _ownedTokensCount[_owner];
+        return _ownedTokensCount[_owner].current();
     }
 
     /// @notice Find the owner of an NFT
@@ -76,7 +79,7 @@ contract ERC721 is ERC165, IERC721 {
         // we are adding a new address with a token id for minting
         _tokenOwner[tokenId] = to;
         // keeping track of each address thsat is minting and adding one to the count
-        _ownedTokensCount[to] += 1;
+        _ownedTokensCount[to].increment();
 
         emit Transfer(address(0), to, tokenId);
     }
@@ -97,8 +100,8 @@ contract ERC721 is ERC165, IERC721 {
         require(ownerOf(_tokenId) == _from,'Error: trying to transfer a token address owner does not own');
 
         _tokenOwner[_tokenId] = _to;
-        _ownedTokensCount[_from] -= 1;
-        _ownedTokensCount[_to] += 1;
+        _ownedTokensCount[_from].decrement();
+        _ownedTokensCount[_to].increment();
 
         emit Transfer(_from, _to, _tokenId);
     }
